@@ -1,0 +1,34 @@
+SELECT TOP 100000 p.objid, s.specobjid, -- or 10000
+s.class,
+p.ra, p.dec, s.z as redshift,
+p.u - p.g AS u_g,
+p.g - p.r AS g_r,
+p.r - p.i AS r_i,
+p.i - p.z AS i_z
+INTO mydb.Gals
+FROM SpecObj as s
+JOIN PhotoObj AS p ON p.objid = s.bestObjID
+WHERE s.z > 0 AND s.zErr<0.1
+-- AND p.ra>0 AND p.ra<10
+-- AND p.dec>30 AND p.dec<32
+AND s.class = 'GALAXY' AND s.bestObjID = s.fluxObjID
+-- Quality flags
+AND s.zWarning=0 AND p.clean=1 AND p.mode=1
+AND s.sciencePrimary=1
+AND s.targetType='SCIENCE'
+AND p.insideMask=0
+AND (p.flags_r & 0x20) = 0
+AND (p.flags_r & 0x80000) = 0
+AND (p.flags_r & 0x800000000000) = 0
+AND (p.flags_r & 0x10000000000) = 0
+AND ((p.flags_r & 0x100000000000) = 0
+OR (p.flags_r & 0x1000) = 0)
+AND (p.flags_r & 0x40000) = 0
+AND (p.flags_r & 0x80) = 0
+AND (p.flags_r & 0x4) = 0
+AND ((p.flags_r & 0x10000000) != 0)
+AND ((p.flags_r & 0x8100000c00a0) = 0)
+AND (((p.flags_r & 0x400000000000) = 0)
+AND (p.psfmagerr_r <= 0.2))
+AND (((p.flags_r & 0x100000000000) = 0)
+AND (p.flags_r & 0x1000) = 0);
